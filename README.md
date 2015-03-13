@@ -9,7 +9,7 @@ spatial extension as well as a standalone application to process large scale spa
 
 To compile SpatialSpark, [SBT](http://www.scala-sbt.org/) is required. After installed and configured SBT, simply run
     
-    sbt/sbt assembly
+    sbt assembly
 
 SpatialSpark has been compiled and tested on Spark 1.1.0 as well as Spark 1.2.1. The version can be changed in
 `build.sbt` file. For geometry operations, well known [JTS](http://www.vividsolutions.com/jts/JTSHome.htm) library is used.
@@ -36,7 +36,7 @@ spatial join example.
     --partition 1024 --predicate within 
     
 If both datasets are very large, so that the right dataset cannot fit in memory, here is an example of performing
-partitioned spatial join.
+partition based spatial join.
 
     bin/spark-submit --master spark://spark_cluster:7077 --class spatialspark.main.SpatialJoinApp \
     SpatialSpark-assembly-1.0.jar --left A --geom_left 0 --right B --geom_right 1 --broadcast false --output output \
