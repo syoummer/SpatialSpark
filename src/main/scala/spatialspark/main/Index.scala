@@ -62,6 +62,8 @@ object Index {
     val conf = new SparkConf().setAppName("Build Index")
     //.setMaster("local[4]")
     //.setSparkHome("/Users/you/spark-1.2.0")
+    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+    conf.set("spark.kryo.registrator", "spatialspark.util.KyroRegistrator")
     val sc = new SparkContext(conf)
 
     val inputFile = options.getOrElse('input, "").asInstanceOf[String]
