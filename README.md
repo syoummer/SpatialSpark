@@ -62,6 +62,32 @@ For partition based spatial join with STP, use
 Generate a spatial partition from input dataset, currently Fixed-Grid Partition (FGP), Binary-Split Partition (BSP) and
 Sort-Tile Partition (STP) are supported. Use `--help` to list all options.
 
+#### Spatial Range Query
+Spatial range query includes both indexed and non-indexed query. For non-indexed query, a full scan is performed on the
+dataset and returns filtered results. here is an example,
+
+    bin/spark-submit --master spark://spark_cluster:7077 --class spatialspark.main.Query \
+    SpatialSpark-assembly-1.0.jar --input data/point1k.tsv --geom 1 --output output.tsv \
+    --query 98500.0,181800.0,986000.0,182000.0
+
+Since a full scan needs to load the whole dataset, the performance may be bad if the dataset is very large. To improve
+the performance, an indexed range query is supported.
+
+Before performing the indexed range query, an index need to be created. An example is shown below.
+
+    bin/spark-submit --master spark://spark_cluster:7077 --class spatialspark.main.Index \
+    SpatialSpark-assembly-1.0.jar --input data/point1k.tsv --geom 1 --output data/point1k_new \
+    --conf 32:32:0.3
+
+After the job, the dataset will be re-ordered and saved in the specified output location and an index file will
+be created in the specified output location with `"_index"` suffix. The index file is separated with the data, and the
+content of the new dataset is as same as the orignal one but in different order.
+
+With created index, the range query can be performed very fast.
+
+    bin/spark-submit --master spark://spark_cluster:7077 --class spatialspark.main.Query \
+    SpatialSpark-assembly-1.0.jar --input data/point1k.tsv --geom 1 --output output.tsv \
+    --query 98500.0,181800.0,986000.0,182000.0 --use_index true
 
 ## Future Work
 - Add tests
