@@ -84,7 +84,7 @@ object Query {
     //val queryGeometry = (new WKTReader).read(query)
     val queryGeometry = (new GeometryFactory()).toGeometry(new Envelope(q(0), q(2), q(1), q(3)))
     val geomIdx = options.getOrElse('geom, 0).asInstanceOf[Int]
-    val radius = options.getOrElse('distance, 0).asInstanceOf[Double]
+    val radius = options.getOrElse('distance, 0.0d).asInstanceOf[Double]
     val separator = options.getOrElse('separator, "\t").asInstanceOf[String]
     val predicate = options.getOrElse('predicate, "").asInstanceOf[String]
     val useIndex = options.getOrElse('index, false).asInstanceOf[Boolean]
