@@ -23,7 +23,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.{HashPartitioner, SparkContext}
 
 import scala.util.Try
-
+import spatialspark.util.MBR
 /**
  * Created by Simin You on 3/20/15.
  * @author Simin You
