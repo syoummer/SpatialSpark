@@ -24,7 +24,7 @@ import org.apache.spark.{HashPartitioner, SparkContext}
 import spatialspark.util.MBR
 
 import scala.util.Try
-
+import spatialspark.util.MBR
 /**
  * Created by Simin You on 3/20/15.
  * @author Simin You
