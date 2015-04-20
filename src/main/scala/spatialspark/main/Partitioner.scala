@@ -106,7 +106,7 @@ object Partitioner {
     val inputMBRs = sc.textFile(inputFile).map(x => (new WKTReader).read(x.split(separator).apply(geomIdx)))
                       .map(x => x.getEnvelopeInternal).map(x => new MBR(x.getMinX, x.getMinY, x.getMaxX, x.getMaxY))
     val extent:MBR = if (extentString == "")
-                        inputMBRs.reduce(_ min _)
+                        inputMBRs.reduce(_ union _)
                      else new MBR(extentString.split(":").apply(0).toDouble, extentString.split(":").apply(1).toDouble,
                                   extentString.split(":").apply(2).toDouble, extentString.split(":").apply(3).toDouble)
 

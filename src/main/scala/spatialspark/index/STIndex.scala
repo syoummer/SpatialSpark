@@ -21,8 +21,6 @@ import com.vividsolutions.jts.io.WKTReader
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{HashPartitioner, SparkContext}
-import spatialspark.util.MBR
-
 import scala.util.Try
 import spatialspark.util.MBR
 /**
