@@ -44,10 +44,10 @@ object STIndex {
     }
   }
 
-  case class Wrapped[A](elem: A)(implicit ordering: Ordering[A])
-    extends Ordered[Wrapped[A]] {
-    def compare(that: Wrapped[A]): Int = ordering.compare(this.elem, that.elem)
-  }
+  // case class Wrapped[A](elem: A)(implicit ordering: Ordering[A])
+  //   extends Ordered[Wrapped[A]] {
+  //   def compare(that: Wrapped[A]): Int = ordering.compare(this.elem, that.elem)
+  // }
 
   /**
    * Generate partitions from sample MBRs
@@ -65,8 +65,9 @@ object STIndex {
     //sort by center_x, slice, center_y
     val centroids = sampleData.map(x => ((x.xmin + x.xmax) / 2.0, (x.ymin + x.ymax) / 2.0))
     val objs = centroids.sortByKey(true).zipWithIndex().map(x => (x._1._1, x._1._2, x._2))
-    val objectsSorted = objs.map(x=>(Wrapped(x._3/numObjectsPerSlice, x._2), x))
-      .sortByKey(true).values
+    // val objectsSorted = objs.map(x=>(Wrapped(x._3/numObjectsPerSlice, x._2), x))
+    //   .sortByKey(true).values
+    val objectsSorted = objs.map(x => ((x._3 / numObjectsPerSlice, x._2), x)).sortByKey(true).values
 
     //pack
     val tiles = objectsSorted.zipWithIndex().map(x => (x._2/numObjectsPerTile,
