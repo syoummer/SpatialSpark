@@ -21,10 +21,6 @@ import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.index.strtree.STRtree
 import org.apache.spark.serializer.KryoRegistrator
 
-/**
- * Created by you on 7/10/14.
- */
-
 class KyroRegistrator extends KryoRegistrator {
   override def registerClasses(kryo: Kryo) {
     kryo.register(classOf[Geometry])

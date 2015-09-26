@@ -15,9 +15,6 @@
  */
 package spatialspark.partition
 
-/**
- * Created by Simin You on 10/22/14.
- */
 object PartitionMethod extends Enumeration {
   type PartitionMethod = Value
   val FGP, BSP, STP = Value

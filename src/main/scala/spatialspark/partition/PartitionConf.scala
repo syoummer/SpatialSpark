@@ -18,8 +18,5 @@ package spatialspark.partition
 
 import spatialspark.partition.PartitionMethod.PartitionMethod
 
-/**
- * Created by Simin You on 10/22/14.
- */
-abstract class PartitionConf (val paritionMethod:PartitionMethod ) extends Serializable{
+abstract class PartitionConf(val paritionMethod: PartitionMethod) extends Serializable {
 }

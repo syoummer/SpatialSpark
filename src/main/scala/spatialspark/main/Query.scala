@@ -24,9 +24,6 @@ import spatialspark.operator.SpatialOperator
 import spatialspark.query.RangeQuery
 import org.apache.spark.{SparkContext, SparkConf}
 
-/*
- * Created by Simin You on 11/4/14.
- */
 object Query {
   val usage = """
     Standalone Implementation of Spatial Range Query on Spark
@@ -45,7 +42,7 @@ object Query {
     val arglist = args.toList
     type OptionMap = Map[Symbol, Any]
 
-    def nextOption(map : OptionMap, list: List[String]) : OptionMap = {
+    def nextOption(map: OptionMap, list: List[String]): OptionMap = {
       list match {
         case Nil => map
         case "--help" :: tail =>
@@ -67,14 +64,12 @@ object Query {
           nextOption(map = map ++ Map('predicate -> value), list = tail)
         case "--use_index" :: value :: tail =>
           nextOption(map = map ++ Map('index -> value.toBoolean), list = tail)
-        case option :: tail => println("Unknown option "+option)
+        case option :: tail => println("Unknown option " + option)
           sys.exit(1)
       }
     }
-    val options = nextOption(Map(),arglist)
+    val options = nextOption(Map(), arglist)
     val conf = new SparkConf().setAppName("Spatial Query")
-    //.setMaster("local[4]")
-    //.setSparkHome("/Users/you/spark-1.1.0")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "spatialspark.util.KyroRegistrator")
     val inputFile = options.getOrElse('input, "").asInstanceOf[String]
@@ -82,13 +77,13 @@ object Query {
     val query = options.getOrElse('query, "").asInstanceOf[String]
     val q = query.split(",").map(_.toDouble)
     //val queryGeometry = (new WKTReader).read(query)
-    val queryGeometry = (new GeometryFactory()).toGeometry(new Envelope(q(0), q(2), q(1), q(3)))
+    val queryGeometry = new GeometryFactory().toGeometry(new Envelope(q(0), q(2), q(1), q(3)))
     val geomIdx = options.getOrElse('geom, 0).asInstanceOf[Int]
     val radius = options.getOrElse('distance, 0.0d).asInstanceOf[Double]
     val separator = options.getOrElse('separator, "\t").asInstanceOf[String]
     val predicate = options.getOrElse('predicate, "").asInstanceOf[String]
     val useIndex = options.getOrElse('index, false).asInstanceOf[Boolean]
-    val joinPredicate = predicate.toLowerCase() match{
+    val joinPredicate = predicate.toLowerCase match {
       case "within" => SpatialOperator.Within
       case "withind" => SpatialOperator.WithinD
       case "contains" => SpatialOperator.Contains
@@ -103,7 +98,7 @@ object Query {
 
     val timerBegin = System.currentTimeMillis()
     val sc = new SparkContext(conf)
-    if (useIndex == false) {
+    if (!useIndex) {
       val inputData = sc.textFile(inputFile).map(x => (new WKTReader).read(x.split(separator).apply(geomIdx)))
       val inputDataWithId = inputData.zipWithIndex().map(_.swap)
       val results = RangeQuery(sc, inputDataWithId, queryGeometry, joinPredicate, radius)

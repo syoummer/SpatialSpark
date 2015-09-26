@@ -32,9 +32,7 @@ import org.apache.hadoop.mapred.lib.MultipleTextOutputFormat
 import scala.reflect.io.Path
 import scala.util.Try
 
-/**
- * Created by Simin You on 1/16/15.
- */
+
 object SortTile {
 
 }

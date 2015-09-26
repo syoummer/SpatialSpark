@@ -17,40 +17,37 @@ package spatialspark.util
 
 import com.vividsolutions.jts.geom.Envelope
 
-/**
- * Created by Simin You on 10/22/14.
- */
-class MBR (val xmin:Double,
-           val ymin:Double,
-           val xmax:Double,
-           val ymax:Double) extends Serializable{
-  def union(b:MBR):MBR = {
+class MBR(val xmin: Double,
+          val ymin: Double,
+          val xmax: Double,
+          val ymax: Double) extends Serializable {
+
+  def union(b: MBR): MBR = {
     new MBR(this.xmin min b.xmin, this.ymin min b.ymin, this.xmax max b.xmax, this.ymax max b.ymax)
   }
 
-  def intersects(b:MBR):Boolean = {
+  def intersects(b: MBR): Boolean = {
     !(this.xmin > b.xmax || this.xmax < b.xmin || this.ymin > b.ymax || this.ymax < b.ymin)
   }
 
-  def center():(Double, Double) = {
+  def center(): (Double, Double) = {
     ((xmin + xmax) / 2, (ymin + ymax) / 2)
   }
 
-  override def toString() = {
-    xmin + "," + ymin + "," + xmax + "," + ymax;
+  override def toString = {
+    xmin + "," + ymin + "," + xmax + "," + ymax
   }
 
-
-  def toString(separator:String) = {
-    xmin + separator + ymin + separator + xmax + separator + ymax;
+  def toString(separator: String) = {
+    xmin + separator + ymin + separator + xmax + separator + ymax
   }
 
-  def toText() = {
+  def toText = {
     val result = s"POLYGON(($xmin $ymin,$xmax $ymin,$xmax $ymax,$xmin $ymax,$xmin $ymin))"
     result
   }
 
-  def toEnvelop():Envelope = {
+  def toEnvelope: Envelope = {
     new Envelope(xmin, xmax, ymin, ymax)
   }
 }

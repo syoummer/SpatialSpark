@@ -22,20 +22,18 @@ import spatialspark.operator.SpatialOperator._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-/**
- * Created by Simin You on 10/24/14.
- */
+
 class RangeQuery extends Serializable {
 
 }
 
 object RangeQuery {
 
-  def apply(sc:SparkContext,
-            geometryWithId:RDD[(Long, Geometry)],
-            filterGeometry:Geometry,
-            operator:SpatialOperator,
-            radius:Double = 0) :RDD[(Long, Geometry)] = {
+  def apply(sc: SparkContext,
+            geometryWithId: RDD[(Long, Geometry)],
+            filterGeometry: Geometry,
+            operator: SpatialOperator,
+            radius: Double = 0): RDD[(Long, Geometry)] = {
 
     if (operator == SpatialOperator.Contains)
       geometryWithId.filter(_._2.contains(filterGeometry))

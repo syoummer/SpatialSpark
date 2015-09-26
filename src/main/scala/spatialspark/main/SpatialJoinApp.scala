@@ -30,15 +30,9 @@ import org.apache.spark.{SparkConf, SparkContext}
 import scala.util.Try
 
 /**
- * Created by Simin You on 10/22/14.
- */
-
-
-/**
  * Spatial Join Application
  * Perform spatial join on two datasets, generate a list of matched pairs
  */
-
 object SpatialJoinApp {
   // TODO:
   //  1. do parameter checking
@@ -71,13 +65,14 @@ object SpatialJoinApp {
                        --num_output number of output file partitions
                        --parallel_part use parallel partition implementation (default: false)
                        --help
-               """
+              """
+
   def main(args: Array[String]) {
     if (args.length == 0) println(usage)
     val arglist = args.toList
     type OptionMap = Map[Symbol, Any]
 
-    def nextOption(map : OptionMap, list: List[String]) : OptionMap = {
+    def nextOption(map: OptionMap, list: List[String]): OptionMap = {
       list match {
         case Nil => map
         case "--help" :: tail =>
@@ -111,20 +106,16 @@ object SpatialJoinApp {
           nextOption(map = map ++ Map('extent -> value), list = tail)
         case "--parallel_part" :: value :: tail =>
           nextOption(map = map ++ Map('parallel_part -> value.toBoolean), list = tail)
-        case "--num_output" ::value :: tail =>
+        case "--num_output" :: value :: tail =>
           nextOption(map = map ++ Map('num_output -> value.toInt), list = tail)
-        case "--wkt" ::value :: tail =>
+        case "--wkt" :: value :: tail =>
           nextOption(map = map ++ Map('wkt -> value.toBoolean), list = tail)
-        case option :: tail => println("Unknown option "+option)
+        case option :: tail => println("Unknown option " + option)
           sys.exit(1)
       }
     }
     val options = nextOption(Map(), arglist)
-    //println(options)
-    //spark config
     val conf = new SparkConf().setAppName("Spatial Join App")
-      //.setMaster("local[4]")
-      //.setSparkHome("/Users/you/spark-1.1.0")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "spatialspark.util.KyroRegistrator")
     val sc = new SparkContext(conf)
@@ -134,7 +125,7 @@ object SpatialJoinApp {
     val leftFile = options.getOrElse('left, Nil).asInstanceOf[String]
     val leftGeometryIndex = options.getOrElse('geom_left, 0).asInstanceOf[Int]
     val predicate = options.getOrElse('predicate, Nil).asInstanceOf[String]
-    val joinPredicate = predicate.toLowerCase() match{
+    val joinPredicate = predicate.toLowerCase match {
       case "within" => SpatialOperator.Within
       case "withind" => SpatialOperator.WithinD
       case "contains" => SpatialOperator.Contains
@@ -144,16 +135,15 @@ object SpatialJoinApp {
       case _ => SpatialOperator.NA
     }
     if (joinPredicate == SpatialOperator.NA) {
-      println("unsupported predicate: "+predicate)
+      println("unsupported predicate: " + predicate)
       sys.exit(0)
     }
-    //SEPARATOR = options.getOrElse('separator, ",").asInstanceOf[String]
     val inputSeparator = options.getOrElse('separator, "tab").asInstanceOf[String].toUpperCase
     SEPARATOR = inputSeparator match {
       case "TAB" => TAB
       case "COMMA" => COMMA
       case "SPACE" => SPACE
-      case _ => TAB  //tab by default
+      case _ => TAB //tab by default
     }
     val numPartitions = options.getOrElse('partition, 512).asInstanceOf[Int]
     val radius = options.getOrElse('distance, 0.0).asInstanceOf[Double]
@@ -163,13 +153,6 @@ object SpatialJoinApp {
     val extentString = options.getOrElse('extent, "").asInstanceOf[String]
     val numOutputPart = options.getOrElse('num_output, 0).asInstanceOf[Int]
     val paralllelPartition = options.getOrElse('parallel_part, false).asInstanceOf[Boolean]
-    val wkt = options.getOrElse('wkt, true).asInstanceOf[Boolean]
-    def parseData(input:String, isWKT:Boolean):Try[Geometry] = {
-      if (isWKT)
-        return Try(new WKTReader().read(input))
-      else
-        return Try(new WKBReader().read(WKBReader.hexToBytes(input)))
-    }
 
     val beginTime = System.currentTimeMillis()
 
@@ -186,13 +169,13 @@ object SpatialJoinApp {
       .filter(_._2.isSuccess).map(x => (x._1, x._2.get))
 
     //join processing
-    var matchedPairs:RDD[(Long, Long)] = sc.emptyRDD
+    var matchedPairs: RDD[(Long, Long)] = sc.emptyRDD
     if (broadcastJoin)
       matchedPairs = BroadcastSpatialJoin(sc, leftGeometryById, rightGeometryById, joinPredicate, radius)
     else {
       //get extent that covers both datasets
       val extent = extentString match {
-        case "" => {
+        case "" =>
           val temp = leftGeometryById.map(x => x._2.getEnvelopeInternal)
             .map(x => (x.getMinX, x.getMinY, x.getMaxX, x.getMaxY))
             .reduce((a, b) => (a._1 min b._1, a._2 min b._2, a._3 max b._3, a._4 max b._4))
@@ -200,9 +183,8 @@ object SpatialJoinApp {
             .map(x => (x.getMinX, x.getMinY, x.getMaxX, x.getMaxY))
             .reduce((a, b) => (a._1 min b._1, a._2 min b._2, a._3 max b._3, a._4 max b._4))
           (temp._1 min temp2._1, temp._2 min temp2._2, temp._3 max temp2._3, temp._4 max temp2._4)
-        }
         case _ => (extentString.split(":").apply(0).toDouble, extentString.split(":").apply(1).toDouble,
-                   extentString.split(":").apply(2).toDouble, extentString.split(":").apply(3).toDouble)
+          extentString.split(":").apply(2).toDouble, extentString.split(":").apply(3).toDouble)
       }
 
       val partConf = method match {
@@ -210,15 +192,15 @@ object SpatialJoinApp {
           val dimX = methodConf.split(":").apply(0).toInt
           val dimY = methodConf.split(":").apply(1).toInt
           val ratio = methodConf.split(":").apply(2).toDouble
-          new SortTilePartitionConf (dimX, dimY, new MBR (extent._1, extent._2, extent._3, extent._4), ratio, paralllelPartition)
+          new SortTilePartitionConf(dimX, dimY, new MBR(extent._1, extent._2, extent._3, extent._4), ratio, paralllelPartition)
         case "bsp" =>
           val level = methodConf.split(":").apply(0).toLong
           val ratio = methodConf.split(":").apply(1).toDouble
-          new BinarySplitPartitionConf (ratio, new MBR (extent._1, extent._2, extent._3, extent._4), level, paralllelPartition)
+          new BinarySplitPartitionConf(ratio, new MBR(extent._1, extent._2, extent._3, extent._4), level, paralllelPartition)
         case _ =>
           val dimX = methodConf.split(":").apply(0).toInt
           val dimY = methodConf.split(":").apply(1).toInt
-          new FixedGridPartitionConf (dimX, dimY, new MBR (extent._1, extent._2, extent._3, extent._4) )
+          new FixedGridPartitionConf(dimX, dimY, new MBR(extent._1, extent._2, extent._3, extent._4))
       }
       matchedPairs = PartitionedSpatialJoin(sc, leftGeometryById, rightGeometryById, joinPredicate, radius, partConf)
     }
@@ -234,6 +216,5 @@ object SpatialJoinApp {
       matchedPairs.repartition(numOutputPart).map(x => x._1 + SEPARATOR + x._2).saveAsTextFile(outFile)
 
     //post-processing for gathering data using hashing join
-    //TBD
   }
 }
