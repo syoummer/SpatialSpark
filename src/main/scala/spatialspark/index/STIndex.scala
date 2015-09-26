@@ -106,8 +106,8 @@ object STIndex {
           currentCover = -area
         }
         else {
-          val center1 = currentMBR.center()
-          val center2 = env.center()
+          val center1 = currentMBR.center
+          val center2 = env.center
 
           val distance = (center1._1 - center2._1) * (center1._1 - center2._1) +
             (center1._2 - center2._2) * (center1._2 - center2._2)

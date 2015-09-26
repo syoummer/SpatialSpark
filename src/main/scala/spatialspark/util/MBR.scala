@@ -17,10 +17,7 @@ package spatialspark.util
 
 import com.vividsolutions.jts.geom.Envelope
 
-class MBR(val xmin: Double,
-          val ymin: Double,
-          val xmax: Double,
-          val ymax: Double) extends Serializable {
+case class MBR(xmin: Double, ymin: Double, xmax: Double, ymax: Double) extends Serializable {
 
   def union(b: MBR): MBR = {
     new MBR(this.xmin min b.xmin, this.ymin min b.ymin, this.xmax max b.xmax, this.ymax max b.ymax)
@@ -30,7 +27,7 @@ class MBR(val xmin: Double,
     !(this.xmin > b.xmax || this.xmax < b.xmin || this.ymin > b.ymax || this.ymax < b.ymin)
   }
 
-  def center(): (Double, Double) = {
+  def center: (Double, Double) = {
     ((xmin + xmax) / 2, (ymin + ymax) / 2)
   }
 
@@ -43,12 +40,10 @@ class MBR(val xmin: Double,
   }
 
   def toText = {
-    val result = s"POLYGON(($xmin $ymin,$xmax $ymin,$xmax $ymax,$xmin $ymax,$xmin $ymin))"
-    result
+    s"POLYGON(($xmin $ymin,$xmax $ymin,$xmax $ymax,$xmin $ymax,$xmin $ymin))"
   }
 
   def toEnvelope: Envelope = {
     new Envelope(xmin, xmax, ymin, ymax)
   }
 }
-
