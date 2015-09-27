@@ -16,9 +16,6 @@
 
 package spatialspark.index
 
-/**
- * Created by Simin You on 3/20/15.
- */
-class IndexConf(val inputFile:String, val outputFile:String, val separator:String, val geometryIndex:Int,
-                val gridDimX:Int, val gridDimY:Int, val ratio:Double = 0.3) extends Serializable{
+class IndexConf(val inputFile: String, val outputFile: String, val separator: String, val geometryIndex: Int,
+                val gridDimX: Int, val gridDimY: Int, val ratio: Double = 0.3) extends Serializable {
 }

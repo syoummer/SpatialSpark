@@ -26,11 +26,7 @@ import scala.collection.{SortedSet, mutable}
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 
-/**
- * Created by Simin You on 11/3/14.
- */
 
-
-object  Grid {
+object Grid {
 
 }

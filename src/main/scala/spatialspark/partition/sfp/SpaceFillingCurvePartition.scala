@@ -16,9 +16,6 @@
 
 package spatialspark.partition.sfp
 
-/**
- * Created by Simin You on 10/22/14.
- */
 class SpaceFillingCurvePartition {
 
 }

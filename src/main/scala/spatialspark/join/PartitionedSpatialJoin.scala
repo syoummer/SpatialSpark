@@ -32,36 +32,34 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 
-/**
- * Created by Simin You on 10/22/14.
- */
+
 object PartitionedSpatialJoin {
-  def mbr2pair(x: (Long, Geometry), radius:Double, fgConf:FixedGridPartitionConf) :Array[(Long, (Long, Geometry))] = {
-    val results:ArrayBuffer[(Long, (Long, Geometry))] = new ArrayBuffer[(Long, (Long, Geometry))]()
+  def mbr2pair(x: (Long, Geometry), radius: Double, fgConf: FixedGridPartitionConf): Array[(Long, (Long, Geometry))] = {
+    val results: ArrayBuffer[(Long, (Long, Geometry))] = new ArrayBuffer[(Long, (Long, Geometry))]()
     val mbr = (x._2.getEnvelopeInternal.getMinX, x._2.getEnvelopeInternal.getMinY,
       x._2.getEnvelopeInternal.getMaxX, x._2.getEnvelopeInternal.getMaxY)
     val gridDimX = fgConf.gridDimX
     val gridDimY = fgConf.gridDimY
     val extent = fgConf.extent
-    val gridSizeX = (extent.xmax - extent.xmin) /  gridDimX.toDouble
-    val gridSizeY = (extent.ymax - extent.ymin) /  gridDimY.toDouble
-    val _xmin:Long = (math.floor((mbr._1-extent.xmin)/gridSizeX) max 0).toLong
-    val _ymin:Long = (math.floor((mbr._2-extent.ymin)/gridSizeY) max 0).toLong
-    val _xmax:Long = (math.ceil ((mbr._3-extent.xmin)/gridSizeX) min gridDimX).toLong
-    val _ymax:Long = (math.ceil ((mbr._4-extent.ymin)/gridSizeY) min gridDimY).toLong
+    val gridSizeX = (extent.xmax - extent.xmin) / gridDimX.toDouble
+    val gridSizeY = (extent.ymax - extent.ymin) / gridDimY.toDouble
+    val _xmin: Long = (math.floor((mbr._1 - extent.xmin) / gridSizeX) max 0).toLong
+    val _ymin: Long = (math.floor((mbr._2 - extent.ymin) / gridSizeY) max 0).toLong
+    val _xmax: Long = (math.ceil((mbr._3 - extent.xmin) / gridSizeX) min gridDimX).toLong
+    val _ymax: Long = (math.ceil((mbr._4 - extent.ymin) / gridSizeY) min gridDimY).toLong
 
     for (i <- _xmin to _xmax; j <- _ymin to _ymax) {
-      val id = j*gridDimX.toLong+i
+      val id = j * gridDimX.toLong + i
       val pair = (id, x)
       results.append(pair)
     }
 
-    return results.toArray
+    results.toArray
   }
 
-  def localJoinWithinRtreeReturnDist(x:Iterable[(Long, Geometry)], y:Iterable[(Long, Geometry)],
-                           predicate:SpatialOperator, r:Double = 0.0 ) : Array[(Long, (Long, Double))] = {
-    val results:ArrayBuffer[(Long, (Long, Double))] = new ArrayBuffer[(Long, (Long, Double))]()
+  def localJoinWithinRtreeReturnDist(x: Iterable[(Long, Geometry)], y: Iterable[(Long, Geometry)],
+                                     predicate: SpatialOperator, r: Double = 0.0): Array[(Long, (Long, Double))] = {
+    val results: ArrayBuffer[(Long, (Long, Double))] = new ArrayBuffer[(Long, (Long, Double))]()
     val rtree = new STRtree()
     for (i <- y) {
       val mbr = i._2.getEnvelopeInternal
@@ -70,7 +68,7 @@ object PartitionedSpatialJoin {
     for (i <- x) {
       val mbr = i._2.getEnvelopeInternal
       mbr.expandBy(r)
-      val queryResults = rtree.query(mbr).toArray()
+      val queryResults = rtree.query(mbr).toArray
       for (j <- queryResults) {
         val obj = j.asInstanceOf[(Long, Geometry)]
         val dist = i._2.distance(obj._2)
@@ -81,9 +79,9 @@ object PartitionedSpatialJoin {
   }
 
 
-  def localJoinWithinRtree(x:Iterable[(Long, Geometry)], y:Iterable[(Long, Geometry)], predicate:SpatialOperator,
-                           r:Double = 0.0 ) : Array[(Long, Long)] = {
-    val results:ArrayBuffer[(Long, Long)] = new ArrayBuffer[(Long, Long)]()
+  def localJoinWithinRtree(x: Iterable[(Long, Geometry)], y: Iterable[(Long, Geometry)], predicate: SpatialOperator,
+                           r: Double = 0.0): Array[(Long, Long)] = {
+    val results: ArrayBuffer[(Long, Long)] = new ArrayBuffer[(Long, Long)]()
     val rtree = new STRtree()
     for (i <- y) {
       val mbr = i._2.getEnvelopeInternal
@@ -92,7 +90,7 @@ object PartitionedSpatialJoin {
     for (i <- x) {
       val mbr = i._2.getEnvelopeInternal
       mbr.expandBy(r)
-      val queryResults = rtree.query(mbr).toArray()
+      val queryResults = rtree.query(mbr).toArray
       for (j <- queryResults) {
         val obj = j.asInstanceOf[(Long, Geometry)]
         if (predicate == SpatialOperator.Within) {
@@ -115,20 +113,20 @@ object PartitionedSpatialJoin {
     results.toArray
   }
 
-  def apply(sc:SparkContext,
-            leftGeometryWithId:RDD[(Long, Geometry)],
-            rightGeometryWithId:RDD[(Long, Geometry)],
-            joinPredicate:SpatialOperator,
-            radius:Double,
-            paritionConf:PartitionConf,
-            nestedLoop:Boolean = false) = {
+  def apply(sc: SparkContext,
+            leftGeometryWithId: RDD[(Long, Geometry)],
+            rightGeometryWithId: RDD[(Long, Geometry)],
+            joinPredicate: SpatialOperator,
+            radius: Double,
+            paritionConf: PartitionConf,
+            nestedLoop: Boolean = false) = {
 
     def rtreeQuery(rtree: => Broadcast[STRtree], x: (Long, Geometry), r: Double): Array[(Long, (Long, Geometry))] = {
       val rtreeLocal = rtree.value
       val queryEnv = x._2.getEnvelopeInternal
       queryEnv.expandBy(r)
-      val candidates = rtreeLocal.query(queryEnv).toArray()
-      val results = candidates.map { case (geom_, id_) => (id_.asInstanceOf[Int].toLong, x)}
+      val candidates = rtreeLocal.query(queryEnv).toArray
+      val results = candidates.map { case (geom_, id_) => (id_.asInstanceOf[Int].toLong, x) }
       /*
       val results = (candidates.filter { case (geom_, id_) => new Envelope(geom_.asInstanceOf[MBR].xmin - r,
         geom_.asInstanceOf[MBR].xmax + r,
@@ -159,7 +157,8 @@ object PartitionedSpatialJoin {
       val ratio = STPConf.ratio
       val parallel = STPConf.parallel
 
-      val sampleData = rightGeometryWithId.sample(false, ratio).map(_._2.getEnvelopeInternal)
+      val sampleData = rightGeometryWithId.sample(withReplacement = false, fraction = ratio)
+        .map(_._2.getEnvelopeInternal)
         .map(x => new MBR(x.getMinX, x.getMinY, x.getMaxX, x.getMaxY))
       val partitions = SortTilePartition(sc, sampleData, extent, dimX, dimY, parallel).zipWithIndex
       val rtree: STRtree = new STRtree()
@@ -180,7 +179,8 @@ object PartitionedSpatialJoin {
       val level = BSPConf.level
       val parallel = BSPConf.parallel
 
-      val sampleData = rightGeometryWithId.sample(false, ratio).map(_._2.getEnvelopeInternal)
+      val sampleData = rightGeometryWithId.sample(withReplacement = false, fraction = ratio)
+        .map(_._2.getEnvelopeInternal)
         .map(x => new MBR(x.getMinX, x.getMinY, x.getMaxX, x.getMaxY))
       val partitions = BinarySplitPartition(sc, sampleData, extent, level, parallel).zipWithIndex
       val rtree: STRtree = new STRtree()
@@ -204,47 +204,50 @@ object PartitionedSpatialJoin {
       if (joinPredicate == SpatialOperator.Within) {
         refinedPairs = joinedPairs.flatMap(x =>
           for (i <- x._2._1; j <- x._2._2.getOrElse(Iterable.empty[(Long, Geometry)]); if i._2.within(j._2))
-          yield (i._1, j._1)).distinct()
+            yield (i._1, j._1)).distinct()
       }
       else if (joinPredicate == SpatialOperator.Contains) {
         refinedPairs = joinedPairs.flatMap(x =>
           for (i <- x._2._1; j <- x._2._2.getOrElse(Iterable.empty[(Long, Geometry)]); if i._2.contains(j._2))
-          yield (i._1, j._1)).distinct()
+            yield (i._1, j._1)).distinct()
       }
       else if (joinPredicate == SpatialOperator.WithinD) {
         refinedPairs = joinedPairs.flatMap(x =>
-          for (i <- x._2._1; j <- x._2._2.getOrElse(Iterable.empty[(Long, Geometry)]); if i._2.isWithinDistance(j._2, radius))
-          yield (i._1, j._1)).distinct()
+          for (i <- x._2._1; j <- x._2._2.getOrElse(Iterable.empty[(Long, Geometry)])
+               if i._2.isWithinDistance(j._2, radius))
+            yield (i._1, j._1)).distinct()
       }
       else if (joinPredicate == SpatialOperator.Intersects) {
         refinedPairs = joinedPairs.flatMap(x =>
           for (i <- x._2._1; j <- x._2._2.getOrElse(Iterable.empty[(Long, Geometry)]); if i._2.intersects(j._2))
-          yield (i._1, j._1)).distinct()
+            yield (i._1, j._1)).distinct()
       }
       else if (joinPredicate == SpatialOperator.Overlaps) {
         refinedPairs = joinedPairs.flatMap(x =>
           for (i <- x._2._1; j <- x._2._2.getOrElse(Iterable.empty[(Long, Geometry)]); if i._2.overlaps(j._2))
-          yield (i._1, j._1)).distinct()
+            yield (i._1, j._1)).distinct()
       }
       else if (joinPredicate == SpatialOperator.NearestD) {
-        val joinedPairsWithDist = joinedPairs.flatMap ( x =>
+        val joinedPairsWithDist = joinedPairs.flatMap(x =>
           for (i <- x._2._1; j <- x._2._2.getOrElse(Iterable.empty[(Long, Geometry)]))
-          yield (i._1, (j._1, i._2.distance(j._2)))
+            yield (i._1, (j._1, i._2.distance(j._2)))
         ).reduceByKey((a, b) => if (a._2 < b._2) a else b)
-        refinedPairs = joinedPairsWithDist.reduceByKey((a, b) => if (a._2 < b._2) a else b ).map(x => (x._1, x._2._1))
+        refinedPairs = joinedPairsWithDist.reduceByKey((a, b) => if (a._2 < b._2) a else b).map(x => (x._1, x._2._1))
       }
       refinedPairs
     } else {
       //R-tree join on each partition
       if (joinPredicate == SpatialOperator.NearestD) {
         val joinedPairs = leftPairs.leftOuterJoin(rightPairs).flatMap(x =>
-          localJoinWithinRtreeReturnDist(x._2._1, x._2._2.getOrElse(Iterable.empty[(Long, Geometry)]), joinPredicate, radius))
-        val nearestSearch = joinedPairs.reduceByKey((a, b) => if (a._2 < b._2) a else b ).map(x => (x._1, x._2._1))
+          localJoinWithinRtreeReturnDist(
+            x._2._1, x._2._2.getOrElse(Iterable.empty[(Long, Geometry)]), joinPredicate, radius))
+        val nearestSearch = joinedPairs.reduceByKey((a, b) => if (a._2 < b._2) a else b).map(x => (x._1, x._2._1))
         nearestSearch
       }
       else {
         val joinedPairs = leftPairs.leftOuterJoin(rightPairs).flatMap(x =>
-          localJoinWithinRtree(x._2._1, x._2._2.getOrElse(Iterable.empty[(Long, Geometry)]), joinPredicate, radius)).distinct()
+          localJoinWithinRtree(x._2._1, x._2._2.getOrElse(Iterable.empty[(Long, Geometry)]), joinPredicate, radius))
+          .distinct()
         joinedPairs
       }
     }

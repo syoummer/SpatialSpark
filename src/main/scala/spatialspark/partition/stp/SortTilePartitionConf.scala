@@ -19,9 +19,6 @@ package spatialspark.partition.stp
 import spatialspark.partition.{PartitionConf, PartitionMethod}
 import spatialspark.util.MBR
 
-/**
- * Created by Simin You on 10/22/14.
- */
 class SortTilePartitionConf (val gridDimX:Int, val gridDimY:Int, val extent:MBR, val ratio:Double, val parallel:Boolean)
   extends PartitionConf(PartitionMethod.STP) with Serializable{
 }

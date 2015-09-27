@@ -16,16 +16,11 @@
 
 package spatialspark.index
 
-/**
- * Created by Simin You on 10/28/14.
- */
 class RTree extends Serializable {
 
 }
 
 object RTree {
-  //generate distributed R-Tree on a given dataset
   def apply() = {
-
   }
 }

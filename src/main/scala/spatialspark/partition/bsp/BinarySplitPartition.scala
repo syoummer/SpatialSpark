@@ -21,10 +21,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
-/**
- * Created by Simin You on 10/22/14.
- */
-class BinarySplitPartition extends Serializable{
+class BinarySplitPartition extends Serializable {
 
 }
 
@@ -37,35 +34,35 @@ object BinarySplitPartition {
    * @param level max split level
    * @return partitions represented in (xmin, ymin, xmax, ymax)
    */
-  def binaryPartition(points:RDD[(Double, Double)], extent:(Double, Double, Double, Double), level:Long)
+  def binaryPartition(points: RDD[(Double, Double)], extent: (Double, Double, Double, Double), level: Long)
   : RDD[(Double, Double, Double, Double)] = {
     //TODO optimize this implementation. reduce number of sorts
     val numPoints = points.count()
-    val halfNumPoints = numPoints/2
+    val halfNumPoints = numPoints / 2
     if (numPoints < 3 || level == 0)
       return points.sparkContext.parallelize(List(extent))
 
     var result = points.sparkContext.parallelize(List.empty[(Double, Double, Double, Double)])
 
     if (extent._3 - extent._1 > extent._4 - extent._2) {
-      val pointsSorted = points.sortByKey(true).cache()
+      val pointsSorted = points.sortByKey(ascending = true).cache()
       val first = pointsSorted.zipWithIndex().filter(_._2 / halfNumPoints == 0).map(_._1)
       val second = pointsSorted.subtract(first)
       val bound = first.map(_._1).max()
       val firstExtent = (extent._1, extent._2, bound, extent._4)
       val secondExtent = (bound, extent._2, extent._3, extent._4)
-      result ++= binaryPartition(first, firstExtent, level-1)
-      result ++= binaryPartition(second, secondExtent, level-1)
+      result ++= binaryPartition(first, firstExtent, level - 1)
+      result ++= binaryPartition(second, secondExtent, level - 1)
     }
     else {
-      val pointsSorted = points.keyBy(_._2).sortByKey(true).values.cache()
+      val pointsSorted = points.keyBy(_._2).sortByKey(ascending = true).values.cache()
       val first = pointsSorted.zipWithIndex().filter(_._2 / halfNumPoints == 0).map(_._1)
       val second = pointsSorted.subtract(first)
       val bound = first.map(_._2).max()
       val firstExtent = (extent._1, extent._2, extent._3, bound)
       val secondExtent = (extent._1, bound, extent._3, extent._4)
-      result ++= binaryPartition(first, firstExtent, level-1)
-      result ++= binaryPartition(second, secondExtent, level-1)
+      result ++= binaryPartition(first, firstExtent, level - 1)
+      result ++= binaryPartition(second, secondExtent, level - 1)
     }
     result.cache()
   }
@@ -78,11 +75,11 @@ object BinarySplitPartition {
    * @param level max split level
    * @return partitions represented in (xmin, ymin, xmax, ymax)
    */
-  def binaryPartitionSeq(points:Seq[(Double, Double)], extent:(Double, Double, Double, Double), level:Long)
+  def binaryPartitionSeq(points: Seq[(Double, Double)], extent: (Double, Double, Double, Double), level: Long)
   : Seq[(Double, Double, Double, Double)] = {
     //TODO optimize this implementation. reduce number of sorts
     val numPoints = points.length
-    val halfNumPoints = numPoints/2
+    val halfNumPoints = numPoints / 2
     if (numPoints < 3 || level == 0)
       return Seq(extent)
 
@@ -94,8 +91,8 @@ object BinarySplitPartition {
       val bound = first.map(_._1).max
       val firstExtent = (extent._1, extent._2, bound, extent._4)
       val secondExtent = (bound, extent._2, extent._3, extent._4)
-      result ++= binaryPartitionSeq(first, firstExtent, level-1)
-      result ++= binaryPartitionSeq(second, secondExtent, level-1)
+      result ++= binaryPartitionSeq(first, firstExtent, level - 1)
+      result ++= binaryPartitionSeq(second, secondExtent, level - 1)
     }
     else {
       val pointsSorted = points.sortBy(_._2)
@@ -103,21 +100,21 @@ object BinarySplitPartition {
       val bound = first.map(_._2).max
       val firstExtent = (extent._1, extent._2, extent._3, bound)
       val secondExtent = (extent._1, bound, extent._3, extent._4)
-      result ++= binaryPartitionSeq(first, firstExtent, level-1)
-      result ++= binaryPartitionSeq(second, secondExtent, level-1)
+      result ++= binaryPartitionSeq(first, firstExtent, level - 1)
+      result ++= binaryPartitionSeq(second, secondExtent, level - 1)
     }
     result
   }
-  
-  def apply(sc:SparkContext, sampleData:RDD[MBR], extent:MBR, level:Long, parallel:Boolean = true) : Array[MBR] = {
+
+  def apply(sc: SparkContext, sampleData: RDD[MBR], extent: MBR, level: Long, parallel: Boolean = true): Array[MBR] = {
     val centroids = sampleData.map(x => ((x.xmin + x.xmax) / 2.0, (x.ymin + x.ymax) / 2.0))
     if (parallel) {
       val partitions = binaryPartition(centroids, (extent.xmin, extent.ymin, extent.xmax, extent.ymax), level)
-      return partitions.map(x => new MBR(x._1, x._2, x._3, x._4)).collect()
+      partitions.map(x => new MBR(x._1, x._2, x._3, x._4)).collect()
     } else {
       val partitions = binaryPartitionSeq(centroids.collect().toSeq,
-                                          (extent.xmin, extent.ymin, extent.xmax, extent.ymax), level)
-      return partitions.map(x => new MBR(x._1, x._2, x._3, x._4)).toArray
+        (extent.xmin, extent.ymin, extent.xmax, extent.ymax), level)
+      partitions.map(x => new MBR(x._1, x._2, x._3, x._4)).toArray
       //val partitions = binaryPartition(centroids.repartition(1), (extent.xmin, extent.ymin, extent.xmax, extent.ymax), level)
       //return partitions.map(x => new MBR(x._1, x._2, x._3, x._4)).collect()
     }

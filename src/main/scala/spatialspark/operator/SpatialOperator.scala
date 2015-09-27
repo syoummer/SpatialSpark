@@ -16,9 +16,6 @@
 
 package spatialspark.operator
 
-/**
- * Created by Simin You on 10/22/14.
- */
 object SpatialOperator extends Enumeration {
   type SpatialOperator = Value
   val Within, WithinD, Contains, Intersects, Overlaps, NearestD, NA = Value

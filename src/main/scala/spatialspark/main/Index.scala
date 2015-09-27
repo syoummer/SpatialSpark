@@ -20,9 +20,6 @@ import spatialspark.index.IndexConf
 import spatialspark.index.STIndex
 import org.apache.spark.{SparkConf, SparkContext}
 
-/**
- * Created by Simin You on 3/19/15.
- */
 object Index {
 
 
@@ -34,12 +31,13 @@ object Index {
                  --conf configuration (dim
                  --help
               """
-  def main (args: Array[String]) {
+
+  def main(args: Array[String]) {
     if (args.length == 0) println(usage)
     val arglist = args.toList
     type OptionMap = Map[Symbol, Any]
 
-    def nextOption(map : OptionMap, list: List[String]) : OptionMap = {
+    def nextOption(map: OptionMap, list: List[String]): OptionMap = {
       list match {
         case Nil => map
         case "--help" :: tail =>
@@ -53,15 +51,13 @@ object Index {
           nextOption(map ++ Map('output -> value), tail)
         case "--conf" :: value :: tail =>
           nextOption(map = map ++ Map('conf -> value), list = tail)
-        case option :: tail => println("Unknown option "+option)
+        case option :: tail => println("Unknown option " + option)
           sys.exit(1)
       }
     }
-    val options = nextOption(Map(),arglist)
+    val options = nextOption(Map(), arglist)
 
     val conf = new SparkConf().setAppName("Build Index")
-    //.setMaster("local[4]")
-    //.setSparkHome("/Users/you/spark-1.2.0")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "spatialspark.util.KyroRegistrator")
     val sc = new SparkContext(conf)

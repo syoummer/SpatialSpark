@@ -15,13 +15,6 @@
  */
 package spatialspark.partition.udp
 
-/**
- * Created by Simin You on 10/30/14.
- */
-
-/**
- * user can bring in their predefine partition
- */
 object UserDefinedPartition {
 
 }

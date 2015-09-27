@@ -1,5 +1,7 @@
 # Big Spatial Data Processing using Spark
 
+[![Build Status](https://travis-ci.org/kgs/SpatialSpark.svg?branch=master)](https://travis-ci.org/kgs/SpatialSpark)
+
 ## Introduction
 
 [SpatialSpark](http://simin.me/projects/spatialspark/) aims to provide efficient spatial operations using Apache Spark. It can be used as a Spark library for
@@ -11,7 +13,7 @@ To compile SpatialSpark, [SBT](http://www.scala-sbt.org/) is required. After ins
     
     sbt assembly
 
-SpatialSpark has been compiled and tested on Spark 1.1.0 as well as Spark 1.2.1. The version can be changed in
+SpatialSpark has been compiled and tested on Spark 1.3.0. The version can be changed in
 `build.sbt` file. For geometry operations, well known [JTS](http://www.vividsolutions.com/jts/JTSHome.htm) library is used.
 The JTS library version in SpatialSpark is 1.13.
 

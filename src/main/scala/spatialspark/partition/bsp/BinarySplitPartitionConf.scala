@@ -19,9 +19,6 @@ package spatialspark.partition.bsp
 import spatialspark.partition.{PartitionConf, PartitionMethod}
 import spatialspark.util.MBR
 
-/**
- * Created by Simin You on 10/22/14.
- */
-class BinarySplitPartitionConf (val ratio:Double, val extent:MBR, val level:Long, val parallel:Boolean)
-  extends PartitionConf(PartitionMethod.BSP) with Serializable{
+class BinarySplitPartitionConf(val ratio: Double, val extent: MBR, val level: Long, val parallel: Boolean)
+  extends PartitionConf(PartitionMethod.BSP) with Serializable {
 }

@@ -20,29 +20,26 @@ import spatialspark.util.MBR
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-/**
- * Created by Simin You on 10/22/14.
- */
 class FixedGridPartition extends Serializable {
 
 }
 
 object FixedGridPartition {
-  def apply(sc:SparkContext, extent:MBR, gridDimX:Int, gridDimY:Int) :Array[MBR] = {
+  def apply(sc: SparkContext, extent: MBR, gridDimX: Int, gridDimY: Int): Array[MBR] = {
     val xSize = (extent.xmax - extent.xmin) / gridDimX.toDouble
     val ySize = (extent.ymax - extent.ymin) / gridDimY.toDouble
     val results = for (i <- Array.range(0, gridDimX); j <- Array.range(0, gridDimY))
-                    yield new MBR( i * xSize+extent.xmin, j * ySize + extent.ymin,
-                        (i + 1) * xSize + extent.xmin, (j + 1) * ySize + extent.ymin)
+      yield new MBR(i * xSize + extent.xmin, j * ySize + extent.ymin,
+        (i + 1) * xSize + extent.xmin, (j + 1) * ySize + extent.ymin)
     results
   }
 
-  def genTileRDD(sc:SparkContext, extent:MBR, gridDimX:Int, gridDimY:Int) :RDD[MBR] = {
+  def genTileRDD(sc: SparkContext, extent: MBR, gridDimX: Int, gridDimY: Int): RDD[MBR] = {
     val xSize = (extent.xmax - extent.xmin) / gridDimX.toDouble
     val ySize = (extent.ymax - extent.ymin) / gridDimY.toDouble
     val results = for (i <- Array.range(0, gridDimX); j <- Array.range(0, gridDimY))
-                    yield new MBR( i * xSize+extent.xmin, j * ySize + extent.ymin,
-                      (i + 1) * xSize + extent.xmin, (j + 1) * ySize + extent.ymin)
-    sc.parallelize(results)
+      yield new MBR(i * xSize + extent.xmin, j * ySize + extent.ymin,
+        (i + 1) * xSize + extent.xmin, (j + 1) * ySize + extent.ymin)
+    sc.parallelize(wrapRefArray(results))
   }
 }

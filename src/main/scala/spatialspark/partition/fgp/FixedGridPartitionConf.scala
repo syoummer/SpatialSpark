@@ -19,9 +19,6 @@ package spatialspark.partition.fgp
 import spatialspark.partition.{PartitionConf, PartitionMethod}
 import spatialspark.util.MBR
 
-/**
- * Created by Simin You on 10/22/14.
- */
-class FixedGridPartitionConf (val gridDimX:Int, val gridDimY:Int, val extent:MBR)
-  extends PartitionConf(PartitionMethod.FGP) with Serializable{
+class FixedGridPartitionConf(val gridDimX: Int, val gridDimY: Int, val extent: MBR)
+  extends PartitionConf(PartitionMethod.FGP) with Serializable {
 }
