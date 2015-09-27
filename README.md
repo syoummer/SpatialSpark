@@ -1,6 +1,6 @@
 # Big Spatial Data Processing using Spark
 
-[![Build Status](https://travis-ci.org/kgs/SpatialSpark.svg?branch=master)](https://travis-ci.org/kgs/SpatialSpark)
+[![Build Status](https://travis-ci.org/syoummer/SpatialSpark.svg?branch=master)](https://travis-ci.org/syoummer/SpatialSpark)
 
 ## Introduction
 
