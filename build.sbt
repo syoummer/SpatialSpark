@@ -2,6 +2,8 @@ name := "spatial-spark"
 
 version := "1.1-SNAPSHOT"
 
+scalaVersion := "2.10.5"
+
 resolvers += "Akka Repository" at "http://repo.akka.io/releases"
 
 libraryDependencies ++= Seq(

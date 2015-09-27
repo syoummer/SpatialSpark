@@ -24,6 +24,8 @@ class MBRSpec extends FlatSpec with Matchers {
 
   val Mbr = MBR(-1, 0, 5, 7)
 
+  behavior of "MBR case class"
+
   it should "calculate center correctly" in {
     Mbr.center should be ((2, 3.5))
   }
