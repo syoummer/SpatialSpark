@@ -1,5 +1,7 @@
 # Big Spatial Data Processing using Spark
 
+[![Join the chat at https://gitter.im/syoummer/SpatialSpark](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/syoummer/SpatialSpark?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Build Status](https://travis-ci.org/syoummer/SpatialSpark.svg?branch=master)](https://travis-ci.org/syoummer/SpatialSpark)
 
 ## Introduction
