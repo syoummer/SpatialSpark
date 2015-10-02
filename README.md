@@ -1,31 +1,35 @@
 # Big Spatial Data Processing using Spark
 
-[![Join the chat at https://gitter.im/syoummer/SpatialSpark](https://img.shields.io/badge/GITTER-join%20chat-green.svg?style=flat-square)](https://gitter.im/syoummer/SpatialSpark?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://img.shields.io/travis/syoummer/SpatialSpark/master.svg?style=flat-square)](https://travis-ci.org/syoummer/SpatialSpark)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/me.simin/spatial-spark_2.10/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/me.simin/spatial-spark_2.10)
+[![Join the chat at https://gitter.im/syoummer/SpatialSpark](https://img.shields.io/badge/GITTER-join%20chat-green.svg)](https://gitter.im/syoummer/SpatialSpark?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://img.shields.io/travis/syoummer/SpatialSpark/master.svg)](https://travis-ci.org/syoummer/SpatialSpark)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/me.simin/spatial-spark_2.10/badge.svg)](https://maven-badges.herokuapp.com/maven-central/me.simin/spatial-spark_2.10)
 
 ## Introduction
 
 [SpatialSpark](http://simin.me/projects/spatialspark/) aims to provide efficient spatial operations using Apache Spark. It can be used as a Spark library for
-spatial extension as well as a standalone application to process large scale spatial join operations.  
+spatial extension as well as a standalone application to process large scale spatial join operations. 
 
-## Install
-
-To compile SpatialSpark, [SBT](http://www.scala-sbt.org/) is required. After installed and configured SBT, simply run
-    
-    sbt assembly
-
-SpatialSpark has been compiled and tested on Spark 1.3.0. The version can be changed in
-`build.sbt` file. For geometry operations, well known [JTS](http://www.vividsolutions.com/jts/JTSHome.htm) library is used.
-The JTS library version in SpatialSpark is 1.13.
+SpatialSpark has been compiled and tested on Spark 1.3.0. For geometry operations and data structures for indexes, well known [JTS](http://www.vividsolutions.com/jts/JTSHome.htm) library is used.
 
 ## Usage 
 
 ### Library
-Import the jar file or copy the source files directly to your own project. 
+SpatialSpark is published to Maven Central (including SNAPSHOT releases). Just use following coordinates with your build tool:
+
+```XML
+<dependency>
+    <groupId>me.simin</groupId>
+    <artifactId>spatial-spark_2.10</artifactId>
+    <version>1.0</version>
+</dependency>
+```
 
 ### Standalone Application
-Use `spark-submit` submit a Spark job.
+If you want, you can also use few predefined Spark jobs. To get jar, simply use SBT:
+
+    sbt assembly
+
+Use `spark-submit` to submit a Spark job.
 
 #### Spatial Join
 Run spatial join processing on two datasets with spatial information (in 
