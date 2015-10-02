@@ -110,7 +110,7 @@ With created index, the range query can be performed very fast.
 * KNN search
 
 ## Contact
-If you have questions and comments, use [Gitter chat](https://gitter.im/syoummer/SpatialSpark?) or contact [me](http://simin.me).
+If you have questions and comments, use [Gitter chat](https://gitter.im/syoummer/SpatialSpark) or contact [me](http://simin.me).
 
     Copyright 2015 Simin You
     Copyright 2015 Kamil Gorlo
