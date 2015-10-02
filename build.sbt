@@ -1,5 +1,5 @@
 val Organization = "me.simin"
-val Version = "1.1-SNAPSHOT"
+val Version = "1.1.0-SNAPSHOT"
 
 val jts = "com.vividsolutions" % "jts" % "1.13"
 val scalaTest = "org.scalatest" %% "scalatest" % "2.2.4" % "test"
