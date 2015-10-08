@@ -2,9 +2,9 @@ val Organization = "me.simin"
 val Version = "1.1.0-SNAPSHOT"
 
 val jts = "com.vividsolutions" % "jts" % "1.13"
+val spark = "org.apache.spark" %% "spark-core" % "1.3.0" % "provided"
 val scalaTest = "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 val sparkTestingBase = "com.holdenkarau" %% "spark-testing-base" % "1.3.0_0.0.5" % "test"
-val spark = "org.apache.spark" %% "spark-core" % "1.3.0" % "provided"
 
 val buildSettings = Defaults.coreDefaultSettings ++ Seq(
   organization := Organization,

@@ -20,18 +20,11 @@ import com.vividsolutions.jts.geom.Geometry
 import org.apache.spark.rdd.RDD
 import spatialspark.operator.SpatialOperator._
 
-class BroadcastSpatialJoinSpec extends SparkSpec with GeometryFixtures with SpatialJoinBehaviors {
+// TODO: use not only in tests?
+trait SpatialJoinAlgorithm {
 
-  def broadcastSpatialJoinAlgorithm = new SpatialJoinAlgorithm {
-    override def run(firstGeomWithId: RDD[(Long, Geometry)],
-                     secondGeomWithId: RDD[(Long, Geometry)],
-                     predicate: SpatialOperator): List[(Long, Long)] = {
-      BroadcastSpatialJoin(sc, firstGeomWithId, secondGeomWithId, predicate).collect().toList
-    }
-  }
-
-  behavior of "BroadcastSpatialJoin algorithm"
-
-  it should behave like spatialJoinAlgorithm(broadcastSpatialJoinAlgorithm)
+  def run(firstGeomWithId: RDD[(Long, Geometry)],
+          secondGeomWithId: RDD[(Long, Geometry)],
+          predicate: SpatialOperator): List[(Long, Long)]
 
 }
