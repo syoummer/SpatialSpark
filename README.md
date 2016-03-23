@@ -9,7 +9,7 @@
 [SpatialSpark](http://simin.me/projects/spatialspark/) aims to provide efficient spatial operations using Apache Spark. It can be used as a Spark library for
 spatial extension as well as a standalone application to process large scale spatial join operations. 
 
-SpatialSpark has been compiled and tested on Spark 1.3.0. For geometry operations and data structures for indexes, well known [JTS](http://www.vividsolutions.com/jts/JTSHome.htm) library is used.
+SpatialSpark has been compiled and tested on Spark 1.4.1. For geometry operations and data structures for indexes, well known [JTS](http://www.vividsolutions.com/jts/JTSHome.htm) library is used.
 
 ## Usage 
 
