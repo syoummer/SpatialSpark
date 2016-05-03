@@ -26,6 +26,7 @@ import spatialspark.index.serial.RTree.RTreeNode
 /**
  * Created by Simin You on 7/27/15.
  */
+
 class DistIndex extends Serializable {
 
   //TODO: refactor this...
@@ -94,7 +95,7 @@ class DistIndex extends Serializable {
     }
 
     val sampledInput = input.sample(false, ratio).map(_._1)
-    val partitions = SortTile.generatePartitions(sampledInput, xDim, yDim).zipWithIndex.map(x => (x._1, x._2.toLong))
+    val partitions = generatePartitions(sampledInput, xDim, yDim).zipWithIndex.map(x => (x._1, x._2.toLong))
 
     val inputByPartitionId = input.map(x => (x._1, x._2, findPartId(partitions, x._1)))
     //idMap = inputByPartitionId.map(x => (x._2, x._3))
@@ -152,11 +153,12 @@ class DistIndex extends Serializable {
   var index:RDD[(Long, Double, Double, Double, Double, Seq[RTreeNode])] = null
   //var idMap:RDD[(Long, Long)] = null
 
-  def this(input:RDD[(MBR, Long)], ratio:Double = 0.1, xDim:Long = 32, yDim:Long = 32) = {
+
+  def this(input:RDD[((Double, Double, Double, Double), Long)], ratio:Double = 0.1, xDim:Long = 32, yDim:Long = 32) = {
     this()
     this.index = buildIndex(input, ratio, xDim, yDim)
   }
-  def this(input:RDD[(MBR, Long)], partitions:Array[(MBR, Long)]) = {
+  def this(input:RDD[((Double, Double, Double, Double), Long)], partitions:Array[((Double, Double, Double, Double), Long)]) = {
     this()
     this.index = buildIndex(input, partitions)
   }

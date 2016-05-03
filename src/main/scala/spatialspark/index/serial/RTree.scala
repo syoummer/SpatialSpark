@@ -129,7 +129,7 @@ object RTree {
     val queue = new mutable.Queue[(Int, Int)]
     queue.enqueue((0, 0))
     def intersect(n1:RTreeNode, n2:RTreeNode):Boolean = {
-      MBR.intersect((n1._1, n1._2, n1._3, n1._4), (n2._1, n2._2, n2._3, n2._4))
+      new MBR(n1._1, n1._2, n1._3, n1._4).intersects(new MBR(n2._1, n2._2, n2._3, n2._4))
     }
     while (!queue.isEmpty) {
       val (aIndex, bIndex) = queue.dequeue()
