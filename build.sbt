@@ -1,5 +1,5 @@
 val Organization = "me.simin"
-val Version = "1.1.0-SNAPSHOT"
+val Version = "1.1.1-beta-SNAPSHOT"
 
 val jts = "com.vividsolutions" % "jts" % "1.13"
 val spark = "org.apache.spark" %% "spark-core" % "1.6.1" % "provided"
