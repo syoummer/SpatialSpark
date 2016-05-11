@@ -88,14 +88,19 @@ object BroadcastSpatialJoin {
             joinPredicate: SpatialOperator,
             radius: Double = 0): RDD[(Long, Long)] = {
     // create R-tree on right dataset
+    var radius_exp = radius
+    if (joinPredicate ==SpatialOperator.NearestD && radius_exp ==0){
+         radius_exp = 0.0002
+       }
+
     val strtree = new STRtree()
     val rightGeometryWithIdLocal = rightGeometryWithId.collect()
     rightGeometryWithIdLocal.foreach(x => {
       val y = x._2.getEnvelopeInternal
-      y.expandBy(radius)
+      y.expandBy(radius_exp)
       strtree.insert(y, x)
     })
     val rtreeBroadcast = sc.broadcast(strtree)
-    leftGeometryWithId.flatMap(x => queryRtree(rtreeBroadcast, x._1, x._2, joinPredicate, radius))
+    leftGeometryWithId.flatMap(x => queryRtree(rtreeBroadcast, x._1, x._2, joinPredicate, radius_exp))
   }
 }
