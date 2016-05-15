@@ -28,9 +28,7 @@ import scala.collection.mutable.ArrayBuffer
 
 
 object RTree {
-
   type RTreeNode = (Double, Double, Double, Double, Long, Long)
-
   /**
    * Query R-tree using a window (MBR)
    * @todo make it tail recursion
@@ -123,15 +121,23 @@ object RTree {
     rtree
   }
 
+  /**
+   * R-tree synchronized spatial join
+   * @param a one R-tree
+   * @param b the other R-tree
+   * @return intersected pairs
+   */
   def join(a:Seq[RTreeNode], b:Seq[RTreeNode]): Seq[(Long, Long)] = {
     val results = ArrayBuffer[(Long, Long)]()
 
     val queue = new mutable.Queue[(Int, Int)]
     queue.enqueue((0, 0))
+
     def intersect(n1:RTreeNode, n2:RTreeNode):Boolean = {
       new MBR(n1._1, n1._2, n1._3, n1._4).intersects(new MBR(n2._1, n2._2, n2._3, n2._4))
     }
-    while (!queue.isEmpty) {
+
+    while (queue.nonEmpty) {
       val (aIndex, bIndex) = queue.dequeue()
       val aNode = a.apply(aIndex)
       val bNode = b.apply(bIndex)

@@ -17,7 +17,7 @@
 package spatialspark.join
 
 import com.vividsolutions.jts.geom.Geometry
-import com.vividsolutions.jts.index.strtree.STRtree
+import com.vividsolutions.jts.index.strtree.{GeometryItemDistance, STRtree}
 import spatialspark.operator.SpatialOperator
 import SpatialOperator.SpatialOperator
 import org.apache.spark.SparkContext
@@ -32,7 +32,7 @@ object BroadcastSpatialJoin {
                  radius: Double): Array[(Long, Long)] = {
     val queryEnv = geom.getEnvelopeInternal
     //queryEnv.expandBy(radius)
-    val candidates = rtree.value.query(queryEnv).toArray //.asInstanceOf[Array[(Long, Geometry)]]
+    lazy val candidates = rtree.value.query(queryEnv).toArray //.asInstanceOf[Array[(Long, Geometry)]]
     if (predicate == SpatialOperator.Within) {
       candidates.filter { case (id_, geom_) => geom.within(geom_.asInstanceOf[Geometry]) }
         .map { case (id_, geom_) => (leftId, id_.asInstanceOf[Long]) }
@@ -49,11 +49,14 @@ object BroadcastSpatialJoin {
       candidates.filter { case (id_, geom_) => geom.overlaps(geom_.asInstanceOf[Geometry]) }
         .map { case (id_, geom_) => (leftId, id_.asInstanceOf[Long]) }
     } else if (predicate == SpatialOperator.NearestD) {
-      if (candidates.isEmpty)
-        return Array.empty[(Long, Long)]
-      val nearestItem = candidates.map {
-        case (id_, geom_) => (id_.asInstanceOf[Long], geom_.asInstanceOf[Geometry].distance(geom))
-      }.reduce((a, b) => if (a._2 < b._2) a else b)
+      //if (candidates.isEmpty)
+      //  return Array.empty[(Long, Long)]
+      //val nearestItem = candidates.map {
+      //  case (id_, geom_) => (id_.asInstanceOf[Long], geom_.asInstanceOf[Geometry].distance(geom))
+      //}.reduce((a, b) => if (a._2 < b._2) a else b)
+      queryEnv.expandBy(radius)
+      val nearestItem = rtree.value.nearestNeighbour(queryEnv, geom, new GeometryItemDistance)
+                             .asInstanceOf[(Long, Geometry)]
       Array((leftId, nearestItem._1))
     } else {
       Array.empty[(Long, Long)]
