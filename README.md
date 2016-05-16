@@ -26,7 +26,7 @@ SpatialSpark is published to Maven Central (including SNAPSHOT releases). Just u
 ```
 
 ### DataFrame Implementation
-working in progress
+working in progress (preliminary implementation under `exp`)  
 
 ### Standalone Application
 If you want, you can also use few predefined Spark jobs. To get jar, simply use SBT:
