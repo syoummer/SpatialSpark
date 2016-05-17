@@ -17,7 +17,7 @@
 package spatialspark.join
 
 import com.vividsolutions.jts.geom.Geometry
-import com.vividsolutions.jts.index.strtree.{GeometryItemDistance, STRtree}
+import com.vividsolutions.jts.index.strtree.{ItemBoundable, ItemDistance, GeometryItemDistance, STRtree}
 import spatialspark.operator.SpatialOperator
 import SpatialOperator.SpatialOperator
 import org.apache.spark.SparkContext
@@ -54,8 +54,14 @@ object BroadcastSpatialJoin {
       //val nearestItem = candidates.map {
       //  case (id_, geom_) => (id_.asInstanceOf[Long], geom_.asInstanceOf[Geometry].distance(geom))
       //}.reduce((a, b) => if (a._2 < b._2) a else b)
-      queryEnv.expandBy(radius)
-      val nearestItem = rtree.value.nearestNeighbour(queryEnv, geom, new GeometryItemDistance)
+      class dist extends ItemDistance {
+        override def distance(itemBoundable: ItemBoundable, itemBoundable1: ItemBoundable): Double = {
+          val geom = itemBoundable.getItem.asInstanceOf[(Long, Geometry)]._2
+          val geom1 = itemBoundable1.getItem.asInstanceOf[(Long, Geometry)]._2
+          geom.distance(geom1)
+        }
+      }
+      val nearestItem = rtree.value.nearestNeighbour(queryEnv, (0l, geom), new dist)
                              .asInstanceOf[(Long, Geometry)]
       Array((leftId, nearestItem._1))
     } else {
