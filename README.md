@@ -9,7 +9,7 @@
 [SpatialSpark](http://simin.me/projects/spatialspark/) aims to provide efficient spatial operations using Apache Spark. It can be used as a Spark library for
 spatial extension as well as a standalone application to process large scale spatial join operations. 
 
-SpatialSpark has been compiled and tested on Spark 1.6.1. For geometry operations and data structures for indexes, well known [JTS](http://www.vividsolutions.com/jts/JTSHome.htm) library is used.
+SpatialSpark has been compiled and tested on Spark 2.0.2. For geometry operations and data structures for indexes, well known [JTS](http://www.vividsolutions.com/jts/JTSHome.htm) library is used.
 
 
 ## Usage 
@@ -20,8 +20,8 @@ SpatialSpark is published to Maven Central (including SNAPSHOT releases). Just u
 ```XML
 <dependency>
     <groupId>me.simin</groupId>
-    <artifactId>spatial-spark_2.10</artifactId>
-    <version>1.0</version>
+    <artifactId>spatial-spark_2.11</artifactId>
+    <version>1.1.1</version>
 </dependency>
 ```
 

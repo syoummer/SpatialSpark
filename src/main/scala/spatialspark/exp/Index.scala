@@ -1,8 +1,8 @@
 package spatialspark.exp
 
 import com.vividsolutions.jts.io.WKTReader
+import org.apache.spark.sql.SparkSession
 import spatialspark.index.DistIndex
-import org.apache.spark.{SparkConf, SparkContext}
 
 /**
  * Created by Simin You on 7/27/15.
@@ -45,7 +45,12 @@ object Index {
       }
     }
     val options = nextOption(Map(),arglist)
-    val conf = new SparkConf().setAppName("Build Index")
+
+    val spark = SparkSession
+      .builder()
+      .appName("Build Index")
+      .getOrCreate()
+
     //.setMaster("local[4]")
     //.setSparkHome("/Users/you/spark-1.1.0")
     //conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -61,9 +66,8 @@ object Index {
     val dimY = indexConf.split(":").apply(2).toInt
 
     val timerBegin = System.currentTimeMillis()
-    val sc = new SparkContext(conf)
 
-    val inputData = sc.textFile(inputFile).map(x => (new WKTReader).read(x.split(separator).apply(geomIdx)))
+    val inputData = spark.sparkContext.textFile(inputFile).map(x => (new WKTReader).read(x.split(separator).apply(geomIdx)))
     val inputDataWithId = inputData.zipWithIndex().map(_.swap)
     val inputMBRWithId = inputDataWithId.map(x => {
       val env = x._2.getEnvelopeInternal
@@ -72,8 +76,7 @@ object Index {
     inputMBRWithId.cache()
     val index = new DistIndex(inputMBRWithId.map(x => (x._2, x._1)), ratio = sampleRatio, xDim = dimX, yDim = dimY)
 
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-    import sqlContext.implicits._
+    import spark.implicits._
     val inputDataWithPartId = inputDataWithId.map(x => Geom(x._1, x._2.toText)).toDF()
 
     inputDataWithPartId.write.parquet(outputFile)

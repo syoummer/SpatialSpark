@@ -19,7 +19,7 @@ package spatialspark.exp
 
 import com.vividsolutions.jts.geom.{Envelope, GeometryFactory}
 import com.vividsolutions.jts.io.WKTReader
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import spatialspark.index.serial.RTree
 
@@ -77,8 +77,13 @@ object RangeQuery {
       }
     }
     val options = nextOption(Map(),arglist)
-    val conf = new SparkConf().setAppName("Spatial Query (DataFrame)")
-      //.setMaster("local[4]")
+
+    val spark = SparkSession.builder().appName("Spatial Query (DataFrame)").getOrCreate()
+    spark.conf.set("spark.sql.parquet.filterPushdown", "true")
+    import spark.implicits._
+
+
+    //.setMaster("local[4]")
       //.setSparkHome("/Users/you/spark-1.4.1")
     //conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     //conf.set("spark.kryo.registrator", "me.simin.spark.spatial.util.KyroRegistrator")
@@ -96,7 +101,7 @@ object RangeQuery {
     val useRawData = options.getOrElse('raw, false).asInstanceOf[Boolean]
 
     val timerBegin = System.currentTimeMillis()
-    val sc = new SparkContext(conf)
+    val sc = spark.sparkContext
 
     val env = new GeometryFactory().toGeometry(new Envelope(queryMBR._1, queryMBR._3, queryMBR._2, queryMBR._4))
     if (useIndex == false) {
@@ -105,12 +110,9 @@ object RangeQuery {
     else {
       val path = indexPath
 
-      val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-      sqlContext.setConf("spark.sql.parquet.filterPushdown", "true")
-      import sqlContext.implicits._
 
       def getIndex() = {
-        val parquetFile = sqlContext.read.parquet(path)
+        val parquetFile = spark.read.parquet(path)
         parquetFile
       }
 
@@ -119,7 +121,7 @@ object RangeQuery {
 
       def getParquetDF() = {
         try {
-          val parquetFile = sqlContext.read.parquet(inputFile)
+          val parquetFile = spark.read.parquet(inputFile)
           parquetFile
         } catch {
           case e: Exception => throw new Exception("failed to load index from " + path + "\n because of " + e.getMessage)
@@ -134,10 +136,10 @@ object RangeQuery {
         results
       }
 
-      sqlContext.udf.register("queryRtree", queryRtree _)
+      spark.udf.register("queryRtree", queryRtree _)
 
       val candidateDF0 = {
-        sqlContext.sql(
+        spark.sql(
           """select queryRtree(index.tree, %f, %f,%f,%f) as ids
             |from index where
             |index.xmax >= %f and
@@ -149,14 +151,14 @@ object RangeQuery {
       }
 
       val inputData = getParquetDF
-      inputData.registerTempTable("input")
+      inputData.createOrReplaceTempView("input")
 
       val candidateDF = candidateDF0.explode('ids) {ids => ids.getAs[Seq[Long]](0).map(x => ID(x))} .select('id)
-      candidateDF.registerTempTable("candidate")
+      candidateDF.createOrReplaceTempView("candidate")
 
       val joinResults = inputData.join(candidateDF, inputData("rid") === candidateDF("id"))
       val results2 = joinResults.map(row => (row.getLong(0), row.getString(1))).filter(x => (new WKTReader).read(x._2).intersects(env)).map(x => x._1)
-      results2.saveAsTextFile(outputFile)
+      results2.write.text(outputFile)
 
       val timerEnd = System.currentTimeMillis()
       println("real query time: " + (timerEnd - timerBegin) + " ms")

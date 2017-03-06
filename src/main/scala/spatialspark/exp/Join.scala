@@ -18,11 +18,8 @@
 package spatialspark.exp
 
 import com.vividsolutions.jts.io.{WKBReader, WKTReader}
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{Row, SparkSession}
 import spatialspark.index.serial.RTree
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.{DataFrame, Row}
-import org.apache.spark.{SparkConf, SparkContext}
 
 /**
  * Created by Simin You on 7/27/15.
@@ -81,7 +78,7 @@ object Join {
       }
     }
     val options = nextOption(Map(),arglist)
-    val conf = new SparkConf().setAppName("Spatial Join")
+//    val conf = new SparkConf().setAppName("Spatial Join")
     //.setMaster("local[4]")
     //.setSparkHome("/Users/you/spark-1.4.1")
     //conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -97,7 +94,10 @@ object Join {
     val useIndex = options.getOrElse('index, false).asInstanceOf[Boolean]
 
     val timerBegin = System.currentTimeMillis()
-    val sc = new SparkContext(conf)
+
+    val spark = SparkSession.builder().appName("Spatial Join").getOrCreate()
+    spark.conf.set("spark.sql.parquet.filterPushdown", "true")
+    import spark.implicits._
 
     if (useIndex == false) {
       val leftPath = leftFile
@@ -105,19 +105,17 @@ object Join {
       val rightPath = rightFile
       val rightIndexPath = rightPath + ".index"
 
-      val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-      sqlContext.setConf("spark.sql.parquet.filterPushdown", "true")
-      import sqlContext.implicits._
+
       def getParquetDF(path:String) = {
         try {
-          val parquetFile = sqlContext.read.parquet(path)
+          val parquetFile = spark.read.parquet(path)
           parquetFile
         } catch {
           case e: Exception => throw new Exception("failed to load index from " + path + "\n because of " + e.getMessage)
         }
       }
       val leftIndex = getParquetDF(leftIndexPath)
-      leftIndex.registerTempTable("leftIndex")
+      leftIndex.createOrReplaceTempView("leftIndex")
       //val rightIndex = getParquetDF(rightIndexPath)
       //rightIndex.registerTempTable("rightIndex")
 
@@ -165,7 +163,7 @@ object Join {
       val leftIndexRDD = leftIndex.map(x => (x.getAs[Long]("id"), x.getAs[Seq[Row]]("tree").map(r =>
         (r.getDouble(0), r.getDouble(1), r.getDouble(2),
           r.getDouble(3), r.getLong(4), r.getLong(5)))))
-      val candidatePairs = rightMBRWithPartitionId.map(x => (x._3, (x._1, x._2))).join(leftIndexRDD).flatMap {
+      val candidatePairs = rightMBRWithPartitionId.map(x => (x._3, (x._1, x._2))).join(leftIndexRDD.rdd).flatMap {
         x => val queryResults = RTree.queryRtree(x._2._2, x._2._1._2, 0); queryResults.map(y => (x._2._1._1, y))
       } .map(x => Pair(x._2, x._1)).toDF
 
@@ -213,21 +211,18 @@ object Join {
       val rightPath = rightFile
       val rightIndexPath = rightPath + ".index"
 
-      val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-      sqlContext.setConf("spark.sql.parquet.filterPushdown", "true")
-      import sqlContext.implicits._
       def getParquetDF(path: String) = {
         try {
-          val parquetFile = sqlContext.read.parquet(path)
+          val parquetFile = spark.read.parquet(path)
           parquetFile
         } catch {
           case e: Exception => throw new Exception("failed to load index from " + path + "\n because of " + e.getMessage)
         }
       }
       val leftIndex = getParquetDF(leftIndexPath)
-      leftIndex.registerTempTable("leftIndex")
+      leftIndex.createOrReplaceTempView("leftIndex")
       val rightIndex = getParquetDF(rightIndexPath)
-      rightIndex.registerTempTable("rightIndex")
+      rightIndex.createOrReplaceTempView("rightIndex")
 
       val leftData = getParquetDF(leftFile)
       val rightData = getParquetDF(rightFile)
@@ -267,9 +262,9 @@ object Join {
       }
 
       //register UDF to Spark SQL
-      sqlContext.udf.register("treeJoin", treeJoin _)
-      sqlContext.udf.register("ST_Intersect", intersect _)
-      matchedPartitions.registerTempTable("matchedPartitions")
+      spark.udf.register("treeJoin", treeJoin _)
+      spark.udf.register("ST_Intersect", intersect _)
+      matchedPartitions.createOrReplaceTempView("matchedPartitions")
 
       val joinPartition = leftIndex.join(matchedPartitions, leftIndex("id") === matchedPartitions("lpid"))
         .join(rightIndex, matchedPartitions("rpid") === rightIndex("id"))
@@ -294,10 +289,10 @@ object Join {
       //    leftIndex("xmax") >= rightIndex("xmin") && leftIndex("ymax") >= rightIndex("ymin"))
       //  .select(leftIndex("tree").as("lt"), rightIndex("tree").as("rt"))
 
-      joinPartition.registerTempTable("joinPartition")
+      joinPartition.createOrReplaceTempView("joinPartition")
 
       val joinPairs = joinPartition
-      joinPairs.registerTempTable("joinPairs")
+      joinPairs.createOrReplaceTempView("joinPairs")
       joinPairs.cache()
 
 
