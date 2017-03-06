@@ -17,12 +17,12 @@
 package spatialspark.join
 
 import com.vividsolutions.jts.geom.Geometry
-import com.vividsolutions.jts.index.strtree.{ItemBoundable, ItemDistance, GeometryItemDistance, STRtree}
-import spatialspark.operator.SpatialOperator
-import SpatialOperator.SpatialOperator
+import com.vividsolutions.jts.index.strtree.{ItemBoundable, ItemDistance, STRtree}
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
+import spatialspark.operator.SpatialOperator
+import spatialspark.operator.SpatialOperator.SpatialOperator
 
 
 object BroadcastSpatialJoin {

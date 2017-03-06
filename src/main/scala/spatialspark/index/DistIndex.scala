@@ -18,9 +18,8 @@
 
 package spatialspark.index
 
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{Row, SparkSession}
 import spatialspark.index.serial.RTree.RTreeNode
 
 /**
@@ -163,16 +162,16 @@ class DistIndex extends Serializable {
     this.index = buildIndex(input, partitions)
   }
 
-  def this(sc:SparkContext, path:String) = {
+  def this(path:String) = {
     this()
-    load(sc, path)
+    load(path)
   }
 
   case class Part(id:Long, xmin:Double, ymin:Double, xmax:Double, ymax:Double, tree:Seq[(Double, Double, Double, Double, Long, Long)])
 
   def toDF() = {
-    val sqlContext = new org.apache.spark.sql.SQLContext(index.sparkContext)
-    import sqlContext.implicits._
+    val spark = SparkSession.builder().getOrCreate()
+    import spark.implicits._
     val indexDF = index.map(x => Part(x._1, x._2, x._3, x._4, x._5, x._6.toSeq.map(y => (y._1, y._2, y._3, y._4, y._5, y._6)))).toDF()
     indexDF
   }
@@ -182,8 +181,8 @@ class DistIndex extends Serializable {
    */
   def save(path:String, numPartitions:Int = 0) = {
     if (index == null) throw new NullPointerException("index does not exist")
-    val sqlContext = new org.apache.spark.sql.SQLContext(index.sparkContext)
-    import sqlContext.implicits._
+    val spark = SparkSession.builder().getOrCreate()
+    import spark.implicits._
     val indexDF = index.map(x => Part(x._1, x._2, x._3, x._4, x._5, x._6.toSeq.map(y => (y._1, y._2, y._3, y._4, y._5, y._6)))).toDF()
     if (numPartitions > 0)
       indexDF.repartition(numPartitions).write.parquet(path + ".index")
@@ -193,15 +192,14 @@ class DistIndex extends Serializable {
 
   /**
    * Load from parquet file
-   * @param sc
    * @param path
    */
-  def load(sc:SparkContext, path:String) = {
+  def load(path:String) = {
     try {
-      val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-      sqlContext.setConf("spark.sql.parquet.filterPushdown", "true")
-      import sqlContext.implicits._
-      val parquetFile = sqlContext.read.parquet(path)
+      val spark = SparkSession.builder().getOrCreate()
+      spark.conf.set("spark.sql.parquet.filterPushdown", "true")
+
+      val parquetFile = spark.read.parquet(path)
       index = parquetFile.rdd.map(row => (row.getLong(0), row.getDouble(1), row.getDouble(2), row.getDouble(3), row.getDouble(4),
         row.getAs[Seq[Row]](5).map(r =>
           (r.getDouble(0), r.getDouble(1), r.getDouble(2),
