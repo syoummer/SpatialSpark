@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/syoummer/SpatialSpark](https://img.shields.io/badge/GITTER-join%20chat-green.svg)](https://gitter.im/syoummer/SpatialSpark?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/syoummer/SpatialSpark.svg?branch=master)](https://travis-ci.org/syoummer/SpatialSpark)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/me.simin/spatial-spark_2.10/badge.svg)](https://maven-badges.herokuapp.com/maven-central/me.simin/spatial-spark_2.10)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/me.simin/spatial-spark_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/me.simin/spatial-spark_2.11)
 
 ## Introduction
 
